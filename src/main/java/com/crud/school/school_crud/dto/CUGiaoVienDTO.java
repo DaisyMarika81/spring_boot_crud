@@ -1,25 +1,18 @@
-package com.crud.school.school_crud.entities;
+package com.crud.school.school_crud.dto;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Entity
-@Table(name = "giaovien")
-@RequiredArgsConstructor
+@Data
 @AllArgsConstructor
-@Getter
-@Setter
-public class GiaoVien {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+@NoArgsConstructor
+@Builder
+public class CUGiaoVienDTO {
 
-    @Column(name = "ma_gv", length = 255, unique = true)
     @NotEmpty(message = "Please input maGv")
     private String maGv;
 
@@ -30,4 +23,5 @@ public class GiaoVien {
     private int tuoi;
 
     private String ghichu;
+
 }

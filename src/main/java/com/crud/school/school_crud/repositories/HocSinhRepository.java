@@ -1,6 +1,8 @@
 package com.crud.school.school_crud.repositories;
 
+import com.crud.school.school_crud.entities.GiaoVien;
 import com.crud.school.school_crud.entities.HocSinh;
+import com.crud.school.school_crud.entities.LopHoc;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,5 +11,7 @@ import org.springframework.stereotype.Repository;
 public interface HocSinhRepository extends JpaRepository<HocSinh, Integer> {
 
     HocSinh findByMaHs(String maHs);
+
+    boolean existsByLophoc(LopHoc lopHoc);
 
 }

@@ -1,14 +1,16 @@
 package com.crud.school.school_crud.controllers;
 
+import com.crud.school.school_crud.dto.CULopHocDTO;
 import com.crud.school.school_crud.entities.LopHoc;
 import com.crud.school.school_crud.entities.ResponseObject;
 import com.crud.school.school_crud.services.LopHocService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/lophoc")
+@RequestMapping("/api/v1/lophoc")
 public class LophocController {
     @Autowired
     private LopHocService lophocService;
@@ -24,13 +26,13 @@ public class LophocController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponseObject> createLophoc(@RequestBody LopHoc lophoc) {
-        return lophocService.saveLophoc(lophoc);
+    public ResponseEntity<ResponseObject> createLophoc(@RequestBody @Valid CULopHocDTO createKopHocDTO) {
+        return lophocService.saveLophoc(createKopHocDTO);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ResponseObject> updateLophoc(@PathVariable Integer id, @RequestBody LopHoc updatedLopHoc) {
-        return lophocService.updateLopHoc(id, updatedLopHoc);
+    public ResponseEntity<ResponseObject> updateLophoc(@PathVariable Integer id, @RequestBody @Valid CULopHocDTO updatedLopHocDTO) {
+        return lophocService.updateLopHoc(id, updatedLopHocDTO);
     }
 
     @DeleteMapping("/{id}")

@@ -1,20 +1,25 @@
 package com.crud.school.school_crud.services;
 
+import com.crud.school.school_crud.dto.CUGiaoVienDTO;
 import com.crud.school.school_crud.entities.GiaoVien;
 import com.crud.school.school_crud.entities.ResponseObject;
 import com.crud.school.school_crud.repositories.GiaoVienRepository;
+import com.crud.school.school_crud.repositories.LopHocRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
 public class GiaoVienService {
     @Autowired
     private GiaoVienRepository giaovienRepository;
+    @Autowired
+    private LopHocRepository lopHocRepository;
 
     public ResponseEntity<ResponseObject> getAllGiaovien() {
         List<GiaoVien> listGiaoVien = giaovienRepository.findAll();
@@ -47,49 +52,72 @@ public class GiaoVienService {
         );
     }
 
-    public ResponseEntity<ResponseObject> updateGiaovien(Integer id, GiaoVien updatedGiaoVien) {
+    public ResponseEntity<ResponseObject> updateGiaovien(Integer id, CUGiaoVienDTO updatedGiaoVienDTO) {
         Optional<GiaoVien> existingGiaoVienOptional = giaovienRepository.findById(id);
 
-        if (updatedGiaoVien.getMaGv() != null && !updatedGiaoVien.getMaGv().isEmpty())
+        if (existingGiaoVienOptional.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    new ResponseObject(400, "Can not perform update, please try again!", "")
-            );
-
-        if (existingGiaoVienOptional.isPresent()) {
-            GiaoVien existingGiaoVien = getGiaoVien(updatedGiaoVien, existingGiaoVienOptional);
-            giaovienRepository.save(existingGiaoVien);
-            return ResponseEntity.status(HttpStatus.OK).body(
-                    new ResponseObject(200, "Giao vien updated successfully!", "")
-            );
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    new ResponseObject(404, "Giao vien not found!", "")
+                    new ResponseObject(404, "Giao Vien not found!", "")
             );
         }
+
+        GiaoVien existingGiaoVien = existingGiaoVienOptional.get();
+
+        GiaoVien existedGiaoVienByMaGv = giaovienRepository.findByMaGv(updatedGiaoVienDTO.getMaGv());
+
+        if (existedGiaoVienByMaGv != null && !Objects.equals(existingGiaoVien.getId(), existedGiaoVienByMaGv.getId())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    new ResponseObject(400, "maGv already exists for another Giao Vien!", "")
+            );
+        }
+
+        CUGiaoVienDTO updatedGiaoVien = new CUGiaoVienDTO(
+                updatedGiaoVienDTO.getMaGv(), updatedGiaoVienDTO.getTenGv(), updatedGiaoVienDTO.getTuoi(), updatedGiaoVienDTO.getGhichu());
+
+        GiaoVien updatedSaveGiaoVien = getGiaoVien(updatedGiaoVien, existingGiaoVienOptional);
+        giaovienRepository.save(updatedSaveGiaoVien);
+        return ResponseEntity.status(HttpStatus.OK).body(
+                new ResponseObject(200, "Giao vien updated successfully!", "")
+        );
+
     }
 
     public ResponseEntity<ResponseObject> deleteGiaovien(Integer id) {
-        if (giaovienRepository.existsById(id)) {
+        Optional<GiaoVien> existingGiaoVienOptional = giaovienRepository.findById(id);
+
+        if (existingGiaoVienOptional.isPresent()) {
+            GiaoVien existedGiaoVien = existingGiaoVienOptional.get();
+
+            boolean hasClasses = lopHocRepository.existsByGiaovien(existedGiaoVien);
+
+            if (hasClasses) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        new ResponseObject(400, "Cannot delete the teacher as they are assigned to one or more classes!", "")
+                );
+            }
+
             giaovienRepository.deleteById(id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(
-                    new ResponseObject(204, "Giao vien deleted successfully!", "")
+            return ResponseEntity.status(HttpStatus.OK).body(
+                    new ResponseObject(200, "Teacher deleted successfully!", "")
             );
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    new ResponseObject(404, "Giao vien not found!", "")
+                    new ResponseObject(404, "Teacher not found!", "")
             );
         }
     }
 
-    private GiaoVien getGiaoVien(GiaoVien updatedGiaoVien, Optional<GiaoVien> existingGiaoVienOptional) {
-        GiaoVien existingGiaoVien = existingGiaoVienOptional.get();
-        if (updatedGiaoVien.getTenGv() != null)
-            existingGiaoVien.setTenGv(updatedGiaoVien.getTenGv());
-        if (updatedGiaoVien.getTuoi() > 0)
-            existingGiaoVien.setTuoi(updatedGiaoVien.getTuoi());
-        if (updatedGiaoVien.getGhichu() != null)
-            existingGiaoVien.setGhichu(updatedGiaoVien.getGhichu());
 
+    private GiaoVien getGiaoVien(CUGiaoVienDTO updatedGiaoVienDTO, Optional<GiaoVien> existingGiaoVienOptional) {
+        GiaoVien existingGiaoVien = existingGiaoVienOptional.get();
+        if (updatedGiaoVienDTO.getMaGv() != null)
+            existingGiaoVien.setMaGv(updatedGiaoVienDTO.getMaGv());
+        if (updatedGiaoVienDTO.getTenGv() != null)
+            existingGiaoVien.setTenGv(updatedGiaoVienDTO.getTenGv());
+        if (updatedGiaoVienDTO.getTuoi() > 0)
+            existingGiaoVien.setTuoi(updatedGiaoVienDTO.getTuoi());
+        if (updatedGiaoVienDTO.getGhichu() != null)
+            existingGiaoVien.setGhichu(updatedGiaoVienDTO.getGhichu());
         return existingGiaoVien;
     }
 

@@ -1,14 +1,15 @@
 package com.crud.school.school_crud.controllers;
 
-import com.crud.school.school_crud.entities.HocSinh;
+import com.crud.school.school_crud.dto.CUHocSinhDTO;
 import com.crud.school.school_crud.entities.ResponseObject;
 import com.crud.school.school_crud.services.HocSinhService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/hocsinh")
+@RequestMapping("/api/v1/hocsinh")
 public class HocsinhController {
     @Autowired
     private HocSinhService hocsinhService;
@@ -24,13 +25,14 @@ public class HocsinhController {
     }
 
     @PostMapping
-    public ResponseEntity<ResponseObject> createHocsinh(@RequestBody HocSinh hocsinh) {
-        return hocsinhService.saveHocsinh(hocsinh);
+    public ResponseEntity<ResponseObject> createHocsinh(@RequestBody @Valid CUHocSinhDTO createHocSinhDTO) {
+        return hocsinhService.saveHocsinh(createHocSinhDTO);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<ResponseObject> updateHocsinh(@PathVariable Integer id, @RequestBody HocSinh updatedHocsinh) {
-        return hocsinhService.updateHocSinh(id, updatedHocsinh);
+    public ResponseEntity<ResponseObject> updateHocsinh(@PathVariable Integer id, @RequestBody @Valid CUHocSinhDTO updatedHocsinhDTO) {
+        System.out.println(id);
+        return hocsinhService.updateHocSinh(id, updatedHocsinhDTO);
     }
 
     @DeleteMapping("/{id}")
